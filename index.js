@@ -13,6 +13,8 @@ const DBSOURCE = 'db.sqlite'
 const app = express()
 const router = express.Router()
 
+app.use(express.json())
+
 const db = new sqlite3.Database(DBSOURCE, (err) => {
   try {
     if (err) throw err
@@ -21,8 +23,6 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
     console.error(err.message)
   }
 })
-
-app.use(express.json());
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
@@ -88,9 +88,9 @@ function invalidCredMsg(email, res) {
   return res.status(400).send({
     errors: [{
       value: email,
-      msg: "Invalid credentials",
-      param: "email",
-      location: "body"
+      msg: 'Invalid credentials',
+      param: 'email',
+      location: 'body'
     }]
   })
 }
