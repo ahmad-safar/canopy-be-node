@@ -1,8 +1,14 @@
 # canopy-be-node
 canopy-be-node
 
-For using this backend
-```shell
+## Production
+```
 npm install
 npm start
+```
+
+## Development
+```
+npm install
+npm run dev
 ```

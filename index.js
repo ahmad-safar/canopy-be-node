@@ -1,17 +1,17 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const sqlite3 = require('sqlite3').verbose()
+
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
-const sqlite3 = require('sqlite3').verbose()
-const bodyParser = require('body-parser')
-const router = express.Router()
 
-const app = express()
 
 const JWT_SECRET = 'supersecret'
-
 const DBSOURCE = 'db.sqlite'
+
+const app = express()
+const router = express.Router()
 
 const db = new sqlite3.Database(DBSOURCE, (err) => {
   try {
