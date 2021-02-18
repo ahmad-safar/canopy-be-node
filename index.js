@@ -65,7 +65,7 @@ app.post('/login',
   })
 
 app.get('/incident',
-  // mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
+  mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
   (req, res) => {
 
     let sql,params
