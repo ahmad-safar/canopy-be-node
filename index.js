@@ -6,13 +6,13 @@ let HTTP_PORT = 8000
 const DBSOURCE = "db.sqlite"
 
 app.listen(HTTP_PORT, () => {
-    console.log("Server running on port %PORT%".replace("%PORT%",HTTP_PORT))
-});
+  console.log(`Server running on port ${HTTP_PORT}`)
+})
 
 app.get("/", (req, res, next) => {
-    res.json({"message":"Ok"})
-});
+  res.json({ "message": "Ok" })
+})
 
-app.use(function(req, res){
-    res.status(404);
-});
+app.use(function (req, res) {
+  res.status(404)
+})
