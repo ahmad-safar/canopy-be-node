@@ -1,12 +1,17 @@
-let express = require("express")
-let sqlite3 = require('sqlite3').verbose()
-let app = express()
+const express = require("express")
+const jwt = require('express-jwt')
+const sqlite3 = require('sqlite3').verbose()
+const bodyParser = require('body-parser')
+const router = express.Router()
 
-let HTTP_PORT = 8005
+const app = express()
+
+
+const HTTP_PORT = 8005
 
 const DBSOURCE = "db.sqlite"
 
-let db = new sqlite3.Database(DBSOURCE, (err) => {
+const db = new sqlite3.Database(DBSOURCE, (err) => {
     try {
         if(err) throw err
         console.log('Connected to the SQLite database.')
@@ -19,7 +24,9 @@ app.listen(HTTP_PORT, () => {
   console.log(`Server running on port ${HTTP_PORT}`)
 });
 
-app.get("/", (req, res, next) => {
+app.get("/",
+    jwt({ secret: 'supersecret',algorithms: ['HS256']  }),
+    (req, res, next) => {
     let sql = "SELECT * FROM incident"
     let params = []
     db.all(sql,params,(err,rows) => {
