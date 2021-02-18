@@ -7,8 +7,8 @@ cp .env.example .env
 npm install
 
 # Development
-npm start
+npm run dev
 
 # Production
-npm run dev
+npm run start
 ```
