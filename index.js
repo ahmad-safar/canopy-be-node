@@ -1,7 +1,9 @@
 let express = require("express")
 let app = express()
 
-let HTTP_PORT = 8000 
+let HTTP_PORT = 8000
+
+const DBSOURCE = "db.sqlite"
 
 app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%",HTTP_PORT))
