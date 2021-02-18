@@ -10,7 +10,6 @@ const router = express.Router()
 const app = express()
 
 const JWT_SECRET = 'supersecret'
-
 const DBSOURCE = 'db.sqlite'
 
 const db = new sqlite3.Database(DBSOURCE, (err) => {
@@ -43,8 +42,8 @@ app.post('/login',
       password: req.body.password
     }
 
-    const sql = 'SELECT * FROM users WHERE email = ?'
-    const params = [user.email]
+    let sql = 'SELECT * FROM users WHERE email = ?'
+    let params = [user.email]
 
     db.all(sql, params, (err, rows) => {
       try {
@@ -77,10 +76,41 @@ function invalidCredMsg(email, res) {
 
 app.get('/incident',
   mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
-  (_req, res) => {
+  (req, res) => {
+    let sql,params
+    let queryState = req._parsedUrl.query
 
-    const sql = 'SELECT * FROM incident'
-    const params = []
+    if(queryState == null){
+      sql = 'SELECT * FROM incident'
+      params = []
+    }else{
+      sql = 'SELECT * FROM incident WHERE id = ?'
+      params = [req.query.id]
+    }
+
+    db.all(sql, params, (err, rows) => {
+      try {
+        if (err) throw err
+        res.json({
+          'message': 'success',
+          'data': rows
+        })
+      } catch (err) {
+        console.error(err.message)
+      }
+    })
+  })
+
+app.get('/incident/resolve',
+  // mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
+  (req, res) => {
+
+    // if(req._parsedUrl.query == null) res.json({
+    //   'message':'error, Cannot GET!',
+    // }) 
+
+    let sql = 'SELECT * FROM incident'
+    let params = [req.query.id]
 
     db.all(sql, params, (err, rows) => {
       try {
