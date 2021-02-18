@@ -1,47 +1,96 @@
-const express = require("express")
-const jwt = require('express-jwt')
+const express = require('express')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const mJwt = require('express-jwt')
+const { body, validationResult } = require('express-validator')
 const sqlite3 = require('sqlite3').verbose()
 const bodyParser = require('body-parser')
 const router = express.Router()
 
 const app = express()
 
+const JWT_SECRET = 'supersecret'
 
-const HTTP_PORT = 8005
-
-const DBSOURCE = "db.sqlite"
+const DBSOURCE = 'db.sqlite'
 
 const db = new sqlite3.Database(DBSOURCE, (err) => {
-    try {
-        if(err) throw err
-        console.log('Connected to the SQLite database.')
-    } catch (err) {
-        console.error(err.message)
-    }
-});
-
-app.listen(HTTP_PORT, () => {
-  console.log(`Server running on port ${HTTP_PORT}`)
-});
-
-app.get("/",
-    jwt({ secret: 'supersecret',algorithms: ['HS256']  }),
-    (req, res, next) => {
-    let sql = "SELECT * FROM incident"
-    let params = []
-    db.all(sql,params,(err,rows) => {
-        try {
-            if(err) throw err
-            res.json({
-                "message":"success",
-                "data":rows
-            })
-        } catch (err) {
-            console.error(err.message)
-        }
-    })
+  try {
+    if (err) throw err
+    console.log('Connected to the SQLite database.')
+  } catch (err) {
+    console.error(err.message)
+  }
 })
 
-app.use(function (req, res) {
-  res.status(404)
-});
+app.use(express.json());
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`)
+})
+
+app.post('/login',
+  body('email').isEmail(),
+  body('password').isLength({ min: 5 }),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const user = {
+      email: req.body.email,
+      password: req.body.password
+    }
+
+    const sql = 'SELECT * FROM users WHERE email = ?'
+    const params = [user.email]
+
+    db.all(sql, params, (err, rows) => {
+      try {
+        if (err) throw err
+        // Load hash from the db, which was preivously stored 
+        bcrypt.compare(user.password, rows[0].password, (_err, r) => {
+          if (r == true) {
+            const token = jwt.sign(user, JWT_SECRET)
+            res.json({ token })
+          } else {
+            return invalidCredMsg(user.email, res)
+          }
+        })
+      } catch (err) {
+        return invalidCredMsg(user.email, res)
+      }
+    })
+  })
+
+function invalidCredMsg(email, res) {
+  return res.status(400).json({
+    errors: [{
+      value: email,
+      msg: "Invalid credentials",
+      param: "email",
+      location: "body"
+    }]
+  })
+}
+
+app.get('/incident',
+  mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
+  (_req, res) => {
+
+    const sql = 'SELECT * FROM incident'
+    const params = []
+
+    db.all(sql, params, (err, rows) => {
+      try {
+        if (err) throw err
+        res.json({
+          'message': 'success',
+          'data': rows
+        })
+      } catch (err) {
+        console.error(err.message)
+      }
+    })
+  })
