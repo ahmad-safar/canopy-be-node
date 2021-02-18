@@ -1,18 +1,20 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const sqlite3 = require('sqlite3').verbose()
+const dotenv = require('dotenv');
+
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
-const sqlite3 = require('sqlite3').verbose()
-const bodyParser = require('body-parser')
-const router = express.Router()
+IncomingMessageIncomingMessage
+dotenv.config();
 
 const app = express()
+const router = express.Router()
 
-const JWT_SECRET = 'supersecret'
-const DBSOURCE = 'db.sqlite'
+app.use(express.json())
 
-const db = new sqlite3.Database(DBSOURCE, (err) => {
+const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
   try {
     if (err) throw err
     console.log('Connected to the SQLite database.')
@@ -21,9 +23,7 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
   }
 })
 
-app.use(express.json());
-
-const PORT = process.env.PORT || 3000
+const PORT = process.env.APP_PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })
@@ -51,8 +51,8 @@ app.post('/login',
         // Load hash from the db, which was preivously stored 
         bcrypt.compare(user.password, rows[0].password, (_err, r) => {
           if (r == true) {
-            const token = jwt.sign(user, JWT_SECRET)
-            res.json({ token })
+            const token = jwt.sign(user, process.env.JWT_SECRET)
+            res.send({ token })
           } else {
             return invalidCredMsg(user.email, res)
           }
@@ -63,20 +63,10 @@ app.post('/login',
     })
   })
 
-function invalidCredMsg(email, res) {
-  return res.status(400).json({
-    errors: [{
-      value: email,
-      msg: "Invalid credentials",
-      param: "email",
-      location: "body"
-    }]
-  })
-}
-
 app.get('/incident',
-  mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
-  (req, res) => {
+  mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
+  (_req, res) => {
+
     let sql,params
     let queryState = req._parsedUrl.query
 
@@ -91,9 +81,9 @@ app.get('/incident',
     db.all(sql, params, (err, rows) => {
       try {
         if (err) throw err
-        res.json({
-          'message': 'success',
-          'data': rows
+        res.send({
+          message: 'success',
+          data: rows
         })
       } catch (err) {
         console.error(err.message)
@@ -101,26 +91,19 @@ app.get('/incident',
     })
   })
 
-app.get('/incident/resolve',
-  // mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
-  (req, res) => {
-
-    // if(req._parsedUrl.query == null) res.json({
-    //   'message':'error, Cannot GET!',
-    // }) 
-
-    let sql = 'SELECT * FROM incident'
-    let params = [req.query.id]
-
-    db.all(sql, params, (err, rows) => {
-      try {
-        if (err) throw err
-        res.json({
-          'message': 'success',
-          'data': rows
-        })
-      } catch (err) {
-        console.error(err.message)
-      }
-    })
+function invalidCredMsg(email, res) {
+  return res.status(400).send({
+    errors: [{
+      value: email,
+      msg: 'Invalid credentials',
+      param: 'email',
+      location: 'body'
+    }]
   })
+}
+
+app.use(function (err, _req, res, _next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).send({ message: 'Invalid token.' })
+  }
+})
