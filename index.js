@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
-IncomingMessageIncomingMessage
+
 dotenv.config();
 
 const app = express()
@@ -14,7 +14,8 @@ const router = express.Router()
 
 app.use(express.json())
 
-const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
+
+let db = new sqlite3.Database(process.env.DB_FILE, (err) => {
   try {
     if (err) throw err
     console.log('Connected to the SQLite database.')
@@ -66,7 +67,6 @@ app.post('/login',
 app.get('/incident',
   // mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
   (req, res) => {
-    
 
     let sql,params
     let queryState = req._parsedUrl.query
@@ -75,7 +75,11 @@ app.get('/incident',
       sql = 'SELECT * FROM incident'
       params = []
     }else{
-      sql = 'SELECT * FROM incident WHERE id = ?'
+      if(req.query.resolve == 1){
+        sql = 'UPDATE incident SET status = "Resolved" WHERE id = ?'
+      }else{
+        sql = 'SELECT * FROM incident WHERE id = ?'
+      }
       params = [req.query.id]
     }
 
@@ -91,6 +95,7 @@ app.get('/incident',
       }
     })
   })
+
 
 function invalidCredMsg(email, res) {
   return res.status(400).send({
