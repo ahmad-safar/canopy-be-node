@@ -64,8 +64,9 @@ app.post('/login',
   })
 
 app.get('/incident',
-  mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
-  (_req, res) => {
+  // mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
+  (req, res) => {
+    
 
     let sql,params
     let queryState = req._parsedUrl.query
@@ -102,7 +103,7 @@ function invalidCredMsg(email, res) {
   })
 }
 
-app.use(function (err, _req, res, _next) {
+app.use(function (err, req, res, _next) {
   if (err.name === 'UnauthorizedError') {
     res.status(401).send({ message: 'Invalid token.' })
   }
