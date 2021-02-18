@@ -64,17 +64,6 @@ app.post('/login',
     })
   })
 
-function invalidCredMsg(email, res) {
-  return res.status(400).send({
-    errors: [{
-      value: email,
-      msg: "Invalid credentials",
-      param: "email",
-      location: "body"
-    }]
-  })
-}
-
 app.get('/incident',
   mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
   (_req, res) => {
@@ -94,6 +83,17 @@ app.get('/incident',
       }
     })
   })
+
+function invalidCredMsg(email, res) {
+  return res.status(400).send({
+    errors: [{
+      value: email,
+      msg: "Invalid credentials",
+      param: "email",
+      location: "body"
+    }]
+  })
+}
 
 app.use(function (err, _req, res, _next) {
   if (err.name === 'UnauthorizedError') {
