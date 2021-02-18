@@ -53,7 +53,7 @@ app.post('/login',
         bcrypt.compare(user.password, rows[0].password, (_err, r) => {
           if (r == true) {
             const token = jwt.sign(user, JWT_SECRET)
-            res.json({ token })
+            res.send({ token })
           } else {
             return invalidCredMsg(user.email, res)
           }
@@ -65,7 +65,7 @@ app.post('/login',
   })
 
 function invalidCredMsg(email, res) {
-  return res.status(400).json({
+  return res.status(400).send({
     errors: [{
       value: email,
       msg: "Invalid credentials",
@@ -85,12 +85,18 @@ app.get('/incident',
     db.all(sql, params, (err, rows) => {
       try {
         if (err) throw err
-        res.json({
-          'message': 'success',
-          'data': rows
+        res.send({
+          message: 'success',
+          data: rows
         })
       } catch (err) {
         console.error(err.message)
       }
     })
   })
+
+app.use(function (err, _req, res, _next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).send({ message: 'Invalid token.' })
+  }
+})
