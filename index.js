@@ -2,20 +2,19 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const sqlite3 = require('sqlite3').verbose()
+const dotenv = require('dotenv');
 
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
 
-
-const JWT_SECRET = 'supersecret'
-const DBSOURCE = 'db.sqlite'
+dotenv.config();
 
 const app = express()
 const router = express.Router()
 
 app.use(express.json())
 
-const db = new sqlite3.Database(DBSOURCE, (err) => {
+const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
   try {
     if (err) throw err
     console.log('Connected to the SQLite database.')
@@ -24,7 +23,7 @@ const db = new sqlite3.Database(DBSOURCE, (err) => {
   }
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.APP_PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })
@@ -52,7 +51,7 @@ app.post('/login',
         // Load hash from the db, which was preivously stored 
         bcrypt.compare(user.password, rows[0].password, (_err, r) => {
           if (r == true) {
-            const token = jwt.sign(user, JWT_SECRET)
+            const token = jwt.sign(user, process.env.JWT_SECRET)
             res.send({ token })
           } else {
             return invalidCredMsg(user.email, res)
@@ -65,7 +64,7 @@ app.post('/login',
   })
 
 app.get('/incident',
-  mJwt({ secret: JWT_SECRET, algorithms: ['HS256'] }),
+  mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
   (_req, res) => {
 
     const sql = 'SELECT * FROM incident'

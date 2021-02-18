@@ -1,14 +1,14 @@
 # canopy-be-node
 canopy-be-node
 
-## Production
+## Installation
 ```
+cp .env.example .env
 npm install
-npm start
-```
 
-## Development
-```
-npm install
+# Development
+npm start
+
+# Production
 npm run dev
 ```
