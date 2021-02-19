@@ -2,7 +2,9 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const sqlite3 = require('sqlite3').verbose()
-const dotenv = require('dotenv');
+const dotenv = require('dotenv')
+const cors = require('cors')
+
 
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
@@ -12,6 +14,8 @@ dotenv.config();
 const app = express()
 const router = express.Router()
 
+app.options('*', cors())
+app.use(cors())
 app.use(express.json())
 
 
