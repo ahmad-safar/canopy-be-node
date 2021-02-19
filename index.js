@@ -16,7 +16,6 @@ const router = express.Router()
 app.use(cors())
 app.use(express.json())
 
-
 let db = new sqlite3.Database(process.env.DB_FILE, (err) => {
   try {
     if (err) throw err
@@ -55,7 +54,7 @@ app.post('/login',
         bcrypt.compare(user.password, rows[0].password, (_err, r) => {
           if (r == true) {
             const token = jwt.sign(user, process.env.JWT_SECRET)
-            res.send({ token })
+            res.send({ email: user.email, token })
           } else {
             return invalidCredMsg(user.email, res)
           }
@@ -70,16 +69,16 @@ app.get('/incident',
   mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
   (req, res) => {
 
-    let sql,params
+    let sql, params
     let queryState = req._parsedUrl.query
 
-    if(queryState == null){
+    if (queryState == null) {
       sql = 'SELECT * FROM incident'
       params = []
-    }else{
-      if(req.query.resolve == 1){
+    } else {
+      if (req.query.resolve == 1) {
         sql = 'UPDATE incident SET status = "Resolved" WHERE id = ?'
-      }else{
+      } else {
         sql = 'SELECT * FROM incident WHERE id = ?'
       }
       params = [req.query.id]
