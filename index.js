@@ -16,7 +16,8 @@ const router = express.Router()
 app.use(cors())
 app.use(express.json())
 
-const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
+
+let db = new sqlite3.Database(process.env.DB_FILE, (err) => {
   try {
     if (err) throw err
     console.log('Connected to the SQLite database.')
@@ -44,8 +45,8 @@ app.post('/login',
       password: req.body.password
     }
 
-    const sql = 'SELECT * FROM users WHERE email = ?'
-    const params = [user.email]
+    let sql = 'SELECT * FROM users WHERE email = ?'
+    let params = [user.email]
 
     db.all(sql, params, (err, rows) => {
       try {
@@ -67,10 +68,22 @@ app.post('/login',
 
 app.get('/incident',
   mJwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }),
-  (_req, res) => {
+  (req, res) => {
 
-    const sql = 'SELECT * FROM incident'
-    const params = []
+    let sql,params
+    let queryState = req._parsedUrl.query
+
+    if(queryState == null){
+      sql = 'SELECT * FROM incident'
+      params = []
+    }else{
+      if(req.query.resolve == 1){
+        sql = 'UPDATE incident SET status = "Resolved" WHERE id = ?'
+      }else{
+        sql = 'SELECT * FROM incident WHERE id = ?'
+      }
+      params = [req.query.id]
+    }
 
     db.all(sql, params, (err, rows) => {
       try {
@@ -85,6 +98,7 @@ app.get('/incident',
     })
   })
 
+
 function invalidCredMsg(email, res) {
   return res.status(400).send({
     errors: [{
@@ -96,7 +110,7 @@ function invalidCredMsg(email, res) {
   })
 }
 
-app.use(function (err, _req, res, _next) {
+app.use(function (err, req, res, _next) {
   if (err.name === 'UnauthorizedError') {
     res.status(401).send({ message: 'Invalid token.' })
   }
