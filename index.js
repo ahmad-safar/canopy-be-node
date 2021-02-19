@@ -1,8 +1,9 @@
 const express = require('express')
+const cors = require('cors')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const sqlite3 = require('sqlite3').verbose()
-const dotenv = require('dotenv');
+const dotenv = require('dotenv')
 
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
@@ -12,6 +13,7 @@ dotenv.config();
 const app = express()
 const router = express.Router()
 
+app.use(cors())
 app.use(express.json())
 
 const db = new sqlite3.Database(process.env.DB_FILE, (err) => {
