@@ -76,7 +76,7 @@ app.get('/incident',
       sql = 'SELECT * FROM incident'
       params = []
     } else {
-      if (req.query.resolve == 1) {
+      if (req.query.resolve == '1') {
         sql = 'UPDATE incident SET status = "Resolved" WHERE id = ?'
       } else {
         sql = 'SELECT * FROM incident WHERE id = ?'
