@@ -4,11 +4,6 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const sqlite3 = require('sqlite3').verbose()
 const dotenv = require('dotenv')
-<<<<<<< HEAD
-const cors = require('cors')
-
-=======
->>>>>>> 2bc184383306e55cde5da2f485cf054f0c3381c6
 
 const mJwt = require('express-jwt')
 const { body, validationResult } = require('express-validator')
@@ -18,10 +13,6 @@ dotenv.config();
 const app = express()
 const router = express.Router()
 
-<<<<<<< HEAD
-app.options('*', cors())
-=======
->>>>>>> 2bc184383306e55cde5da2f485cf054f0c3381c6
 app.use(cors())
 app.use(express.json())
 
